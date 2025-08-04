@@ -11,13 +11,7 @@ CREATE COMPUTE MODULE Details_Compute
     
     -- Declare references to possible request messages
     DECLARE empReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetEmpRequest;
-    DECLARE manReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetManagerDetails; -- Corrected operation name
-    
-    -- Set proper SOAP envelope and headers
-    SET OutputRoot.Properties = InputRoot.Properties;
-    SET OutputRoot.MQMD = InputRoot.MQMD;
-    CREATE FIELD OutputRoot.SOAP.Header;
-    SET OutputRoot.SOAP.Header = InputRoot.SOAP.Header;
+    DECLARE magReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetmagRequest;
     
     -- Handle GetEmpRequest
     IF LASTMOVE(empReqRef) THEN
@@ -36,17 +30,20 @@ CREATE COMPUTE MODULE Details_Compute
         SET outEmpRespRef.empNS:Salary  = CAST((50000 + (CAST(empId AS INTEGER) * 1000)) AS CHARACTER);
         
       ELSE
-        -- Create proper SOAP fault
-        CALL CreateSOAPFault('SOAP001', 'Invalid or Missing EmpID');
+        CREATE FIELD OutputRoot.SOAP.Body.soapNS:Fault;
+        DECLARE FaultRef REFERENCE TO OutputRoot.SOAP.Body.soapNS:Fault;
+        
+        SET FaultRef.faultcode   = 'SOAP001';
+        SET FaultRef.faultstring = 'Invalid or Missing EmpID';
       END IF;
       
-    -- Handle GetManagerDetails (corrected operation name)
-    ELSEIF LASTMOVE(manReqRef) THEN
-      SET manId = TRIM(CAST(manReqRef.empNS:ManID AS CHARACTER));
+    -- Handle GetmagRequest
+    ELSEIF LASTMOVE(magReqRef) THEN
+      SET manId = TRIM(CAST(magReqRef.empNS:ManID AS CHARACTER));
       
       IF manId IS NOT NULL AND manId <> '' AND manId <> '0' THEN
-        CREATE FIELD OutputRoot.SOAP.Body.empNS:GetManagerDetailsResponse; -- Corrected response name
-        DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetManagerDetailsResponse;
+        CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
+        DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
         
         -- Populate with dynamic manager details based on ManID
         SET outManRespRef.empNS:Contact = '555-789-' || RIGHT('0000' || manId, 4);
@@ -56,28 +53,15 @@ CREATE COMPUTE MODULE Details_Compute
         SET outManRespRef.empNS:Level = 'Senior Manager';
         
       ELSE
-        -- Create proper SOAP fault
-        CALL CreateSOAPFault('SOAP002', 'Invalid or Missing ManID');
+        CREATE FIELD OutputRoot.SOAP.Body.soapNS:Fault;
+        DECLARE FaultRef REFERENCE TO OutputRoot.SOAP.Body.soapNS:Fault;
+        
+        SET FaultRef.faultcode   = 'SOAP002';
+        SET FaultRef.faultstring = 'Invalid or Missing ManID';
       END IF;
       
-    ELSE
-      -- Handle unknown operation
-      CALL CreateSOAPFault('SOAP003', 'Unknown or unsupported operation');
     END IF;
     
     RETURN TRUE;
   END;
-  
-  -- Helper procedure to create proper SOAP faults
-  CREATE PROCEDURE CreateSOAPFault(IN faultCode CHARACTER, IN faultString CHARACTER)
-  BEGIN
-    CREATE FIELD OutputRoot.SOAP.Body.soapNS:Fault;
-    DECLARE faultRef REFERENCE TO OutputRoot.SOAP.Body.soapNS:Fault;
-    
-    SET faultRef.faultcode = faultCode;
-    SET faultRef.faultstring = faultString;
-    SET faultRef.detail.empNS:ErrorDetails.empNS:Timestamp = CURRENT_TIMESTAMP;
-    SET faultRef.detail.empNS:ErrorDetails.empNS:Source = 'Details_Compute';
-  END;
-  
 END MODULE;
