@@ -11,7 +11,7 @@ CREATE COMPUTE MODULE Details_Compute
     
     -- Declare references to possible request messages
     DECLARE empReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetEmpRequest;
-    DECLARE magReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetmagRequest;
+    DECLARE manReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetManagerDetails;
     
     -- Handle GetEmpRequest
     IF LASTMOVE(empReqRef) THEN
@@ -37,13 +37,13 @@ CREATE COMPUTE MODULE Details_Compute
         SET FaultRef.faultstring = 'Invalid or Missing EmpID';
       END IF;
       
-    -- Handle GetmagRequest
-    ELSEIF LASTMOVE(magReqRef) THEN
-      SET manId = TRIM(CAST(magReqRef.empNS:ManID AS CHARACTER));
+    -- Handle GetManagerDetails
+    ELSEIF LASTMOVE(manReqRef) THEN
+      SET manId = TRIM(CAST(manReqRef.empNS:ManID AS CHARACTER));
       
       IF manId IS NOT NULL AND manId <> '' AND manId <> '0' THEN
-        CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
-        DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
+        CREATE FIELD OutputRoot.SOAP.Body.empNS:GetManagerDetailsResponse;
+        DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetManagerDetailsResponse;
         
         -- Populate with dynamic manager details based on ManID
         SET outManRespRef.empNS:Contact = '555-789-' || RIGHT('0000' || manId, 4);
