@@ -14,19 +14,18 @@ CREATE COMPUTE MODULE Details_Compute
   -- Check if this is an Employee request - ONLY process employee
   IF empReqRef IS NOT NULL THEN
    SET empId = empReqRef.empNS:EmpID;
-   IF empId IS NOT NULL AND empId <> '' THEN
+   IF empId = '1' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     DECLARE outEmpRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     
     -- Set employee response fields
-    SET outEmpRespRef.empNS:Fname  = 'John';
-    SET outEmpRespRef.empNS:Lname  = 'Doe';
-    SET outEmpRespRef.empNS:Email  = 'john.doe@company.com';
+    SET outEmpRespRef.empNS:Fname   = 'John';
+    SET outEmpRespRef.empNS:Lname   = 'Doe';
+    SET outEmpRespRef.empNS:Email   = 'john.doe@company.com';
     SET outEmpRespRef.empNS:Contact = '555-123-4567';
-    SET outEmpRespRef.empNS:Title  = 'Software Engineer';
-    SET outEmpRespRef.empNS:Salary = '80000';
+    SET outEmpRespRef.empNS:Title   = 'Software Engineer';
+    SET outEmpRespRef.empNS:Salary  = '80000';
     
-    -- Return immediately - don't process manager logic
     RETURN TRUE;
    END IF;
   END IF;
@@ -34,7 +33,7 @@ CREATE COMPUTE MODULE Details_Compute
   -- Check if this is a Manager request - ONLY process manager
   IF magReqRef IS NOT NULL THEN
    SET manId = magReqRef.empNS:ManID;
-   IF manId IS NOT NULL AND manId <> '' THEN
+   IF manId = '2' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
     DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
     
@@ -43,7 +42,6 @@ CREATE COMPUTE MODULE Details_Compute
     SET outManRespRef.empNS:MagName = 'Michael Supervisor';
     SET outManRespRef.empNS:Address = '789 Supervisor Avenue';
     
-    -- Return immediately - don't process employee logic
     RETURN TRUE;
    END IF;
   END IF;
