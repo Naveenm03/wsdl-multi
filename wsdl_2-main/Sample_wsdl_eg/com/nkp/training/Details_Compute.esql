@@ -1,38 +1,49 @@
-BROKER SCHEMA com.nkp.training
 DECLARE soapNS NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
 DECLARE empNS NAMESPACE 'http://tempuri.org/Emp_set';
+
 CREATE COMPUTE MODULE Details_Compute
  CREATE FUNCTION Main() RETURNS BOOLEAN
  BEGIN
   DECLARE empId CHARACTER;
   DECLARE manId CHARACTER;
+  
   -- Declare references to possible request messages
   DECLARE empReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetEmpRequest;
   DECLARE magReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetmagRequest;
-  -- Handle GetEmpRequest
-  IF empReqRef <> '' OR empReqRef <> null THEN
+  
+  -- Check if this is an Employee request
+  IF empReqRef IS NOT NULL THEN
    SET empId = empReqRef.empNS:EmpID;
-   IF empId = 1 THEN
+   IF empId IS NOT NULL AND empId <> '' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     DECLARE outEmpRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetEmpResponse;
-    SET outEmpRespRef.empNS:Fname  = 'John';
-    SET outEmpRespRef.empNS:Lname  = 'Doe';
-    SET outEmpRespRef.empNS:Email  = 'john.doe@example.com';
-    SET outEmpRespRef.empNS:Contact = '123-456-7890';
-    SET outEmpRespRef.empNS:Title  = 'Software Engineer';
-    SET outEmpRespRef.empNS:Salary = '80000';
-   END IF;
-  -- Handle GetmagRequest
-  ELSEIF magReqRef <> null or magReqRef <> '' THEN
-   SET manId = magReqRef.empNS:ManID;
-   IF manId = 2 THEN
-    CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
-    DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
-    SET outManRespRef.empNS:Contact = '555-222-3333';
-    SET outManRespRef.empNS:MagName = 'Michael Supervisor';
-    SET outManRespRef.empNS:Address = '789 Supervisor Avenue';
+    
+    -- Generate dynamic employee response based on EmpID
+    SET outEmpRespRef.empNS:EmpID = empId;
+    SET outEmpRespRef.empNS:Fname  = 'Employee_' || empId;
+    SET outEmpRespRef.empNS:Lname  = 'LastName_' || empId;
+    SET outEmpRespRef.empNS:Email  = 'employee' || empId || '@company.com';
+    SET outEmpRespRef.empNS:Contact = '555-' || empId || '-0000';
+    SET outEmpRespRef.empNS:Title  = 'Employee';
+    SET outEmpRespRef.empNS:Salary = '50000';
    END IF;
   END IF;
+  
+  -- Check if this is a Manager request
+  IF magReqRef IS NOT NULL THEN
+   SET manId = magReqRef.empNS:ManID;
+   IF manId IS NOT NULL AND manId <> '' THEN
+    CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
+    DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
+    
+    -- Generate dynamic manager response based on ManID
+    SET outManRespRef.empNS:ManID = manId;
+    SET outManRespRef.empNS:Contact = '555-' || manId || '-0000';
+    SET outManRespRef.empNS:MagName = 'Manager_' || manId;
+    SET outManRespRef.empNS:Address = 'Manager Address ' || manId;
+   END IF;
+  END IF;
+  
   RETURN TRUE;
  END;
 END MODULE;
