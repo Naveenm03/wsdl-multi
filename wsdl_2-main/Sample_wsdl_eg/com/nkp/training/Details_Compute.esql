@@ -19,7 +19,6 @@ CREATE COMPUTE MODULE Details_Compute
     DECLARE outEmpRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     
     -- Set employee response fields
-    SET outEmpRespRef.empNS:EmpID = empId;
     SET outEmpRespRef.empNS:Fname  = 'John';
     SET outEmpRespRef.empNS:Lname  = 'Doe';
     SET outEmpRespRef.empNS:Email  = 'john.doe@company.com';
@@ -40,7 +39,6 @@ CREATE COMPUTE MODULE Details_Compute
     DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
     
     -- Set manager response fields
-    SET outManRespRef.empNS:ManID = manId;
     SET outManRespRef.empNS:Contact = '555-987-6543';
     SET outManRespRef.empNS:MagName = 'Michael Supervisor';
     SET outManRespRef.empNS:Address = '789 Supervisor Avenue';
