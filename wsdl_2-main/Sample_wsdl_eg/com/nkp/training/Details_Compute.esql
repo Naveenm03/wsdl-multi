@@ -11,15 +11,15 @@ CREATE COMPUTE MODULE Details_Compute
   DECLARE empReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetEmpRequest;
   DECLARE magReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetmagRequest;
   
-  -- Check if this is an Employee request - ONLY process if employee request exists
+  -- Check if this is an Employee request - ONLY process employee
   IF empReqRef IS NOT NULL THEN
    SET empId = empReqRef.empNS:EmpID;
    IF empId IS NOT NULL AND empId <> '' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     DECLARE outEmpRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     
-    -- Set employee response fields with static values to avoid syntax errors
-  
+    -- Set employee response fields
+    SET outEmpRespRef.empNS:EmpID = empId;
     SET outEmpRespRef.empNS:Fname  = 'John';
     SET outEmpRespRef.empNS:Lname  = 'Doe';
     SET outEmpRespRef.empNS:Email  = 'john.doe@company.com';
@@ -27,25 +27,25 @@ CREATE COMPUTE MODULE Details_Compute
     SET outEmpRespRef.empNS:Title  = 'Software Engineer';
     SET outEmpRespRef.empNS:Salary = '80000';
     
-    -- Return here to avoid processing manager logic
+    -- Return immediately - don't process manager logic
     RETURN TRUE;
    END IF;
   END IF;
   
-  -- Check if this is a Manager request - ONLY process if manager request exists
+  -- Check if this is a Manager request - ONLY process manager
   IF magReqRef IS NOT NULL THEN
    SET manId = magReqRef.empNS:ManID;
    IF manId IS NOT NULL AND manId <> '' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
     DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
     
-    -- Set manager response fields with static values to avoid syntax errors
-    
+    -- Set manager response fields
+    SET outManRespRef.empNS:ManID = manId;
     SET outManRespRef.empNS:Contact = '555-987-6543';
     SET outManRespRef.empNS:MagName = 'Michael Supervisor';
     SET outManRespRef.empNS:Address = '789 Supervisor Avenue';
     
-    -- Return here to avoid processing employee logic
+    -- Return immediately - don't process employee logic
     RETURN TRUE;
    END IF;
   END IF;
