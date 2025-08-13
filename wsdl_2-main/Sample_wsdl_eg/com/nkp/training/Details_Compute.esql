@@ -11,36 +11,42 @@ CREATE COMPUTE MODULE Details_Compute
   DECLARE empReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetEmpRequest;
   DECLARE magReqRef REFERENCE TO InputRoot.SOAP.Body.empNS:GetmagRequest;
   
-  -- Check if this is an Employee request
+  -- Check if this is an Employee request - ONLY process if employee request exists
   IF empReqRef IS NOT NULL THEN
    SET empId = empReqRef.empNS:EmpID;
    IF empId IS NOT NULL AND empId <> '' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     DECLARE outEmpRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetEmpResponse;
     
-    -- Generate dynamic employee response based on EmpID
+    -- Set employee response fields with static values to avoid syntax errors
     SET outEmpRespRef.empNS:EmpID = empId;
-    SET outEmpRespRef.empNS:Fname  = 'Employee_' || empId;
-    SET outEmpRespRef.empNS:Lname  = 'LastName_' || empId;
-    SET outEmpRespRef.empNS:Email  = 'employee' || empId || '@company.com';
-    SET outEmpRespRef.empNS:Contact = '555-' || empId || '-0000';
-    SET outEmpRespRef.empNS:Title  = 'Employee';
-    SET outEmpRespRef.empNS:Salary = '50000';
+    SET outEmpRespRef.empNS:Fname  = 'John';
+    SET outEmpRespRef.empNS:Lname  = 'Doe';
+    SET outEmpRespRef.empNS:Email  = 'john.doe@company.com';
+    SET outEmpRespRef.empNS:Contact = '555-123-4567';
+    SET outEmpRespRef.empNS:Title  = 'Software Engineer';
+    SET outEmpRespRef.empNS:Salary = '80000';
+    
+    -- Return here to avoid processing manager logic
+    RETURN TRUE;
    END IF;
   END IF;
   
-  -- Check if this is a Manager request
+  -- Check if this is a Manager request - ONLY process if manager request exists
   IF magReqRef IS NOT NULL THEN
    SET manId = magReqRef.empNS:ManID;
    IF manId IS NOT NULL AND manId <> '' THEN
     CREATE FIELD OutputRoot.SOAP.Body.empNS:GetMagResponse;
     DECLARE outManRespRef REFERENCE TO OutputRoot.SOAP.Body.empNS:GetMagResponse;
     
-    -- Generate dynamic manager response based on ManID
+    -- Set manager response fields with static values to avoid syntax errors
     SET outManRespRef.empNS:ManID = manId;
-    SET outManRespRef.empNS:Contact = '555-' || manId || '-0000';
-    SET outManRespRef.empNS:MagName = 'Manager_' || manId;
-    SET outManRespRef.empNS:Address = 'Manager Address ' || manId;
+    SET outManRespRef.empNS:Contact = '555-987-6543';
+    SET outManRespRef.empNS:MagName = 'Michael Supervisor';
+    SET outManRespRef.empNS:Address = '789 Supervisor Avenue';
+    
+    -- Return here to avoid processing employee logic
+    RETURN TRUE;
    END IF;
   END IF;
   
